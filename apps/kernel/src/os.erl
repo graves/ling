@@ -53,7 +53,7 @@ putenv(_Name, _Value) -> true.
 
 getpid() -> "(no pid)".
 
-timestamp() -> now().
+timestamp() -> erlang:timestamp().
 
 type() ->
 	erlang:system_info(os_type).

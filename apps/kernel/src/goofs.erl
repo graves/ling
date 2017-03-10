@@ -269,7 +269,7 @@ handle_call({create_file,Name}, _From, #g{root =Root,files =Files} =St) ->
 		File = #f{index =Index,
 				  length =0,
 				  version =0,
-				  objid =crypto:rand_bytes(8),
+				  objid =crypto:strong_rand_bytes(8),
 				  mode =8#644, %% magic
 				  atime =TS,
 				  mtime =TS,
@@ -825,7 +825,7 @@ init_root_record(_St) ->
 
 	TS = '9p':timestamp(),
 	F = #f{version =0,
-		   objid =crypto:rand_bytes(8),
+		   objid =crypto:strong_rand_bytes(8),
 		   mode =?DMDIR bor 8#755,	%% magic
 		   atime =TS,
 		   mtime =TS},

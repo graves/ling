@@ -1948,7 +1948,7 @@ do_safe_fixtable(Head, Pid, true) ->
     case Head#head.fixed of 
 	false -> 
 	    link(Pid),
-	    Fixed = {erlang:now(), [{Pid, 1}]},
+	    Fixed = {erlang:timestamp(), [{Pid, 1}]},
 	    Ftab = dets_utils:get_freelists(Head),
 	    Head#head{fixed = Fixed, freelists = {Ftab, Ftab}};
 	{TimeStamp, Counters} ->
@@ -3052,14 +3052,14 @@ update_cache(Head, ToAdd) ->
 	    {Head1, Found, []};
 	Cache#cache.wrtime =:= undefined ->
 	    %% Empty cache. Schedule a delayed write.
-	    Now = now(), Me = self(),
+	    Now = erlang:timestamp(), Me = self(),
 	    Call = ?DETS_CALL(Me, {delayed_write, Now}),
 	    erlang:send_after(Cache#cache.delay, Me, Call),
 	    {Head1#head{cache = NewCache#cache{wrtime = Now}}, Found, []};
 	Size0 =:= 0 ->
 	    %% Empty cache that has been written after the
 	    %% currently scheduled delayed write.
-	    {Head1#head{cache = NewCache#cache{wrtime = now()}}, Found, []};
+	    {Head1#head{cache = NewCache#cache{wrtime = erlang:timestamp()}}, Found, []};
 	true ->
 	    %% Cache is not empty, delayed write has been scheduled.
 	    {Head1, Found, []}

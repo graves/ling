@@ -220,9 +220,9 @@ hash(Hash, Data0) ->
 -spec hash_init('md5'|'md4'|'ripemd160'|
                 'sha'|'sha224'|'sha256'|'sha384'|'sha512') -> any().
 
-hash_init(md5)       -> {md5, crypto:md5_init()};
-hash_init(md4)       -> {md4, crypto:md4_init()};
-hash_init(sha)       -> {sha, crypto:sha_init()};
+hash_init(md5)       -> {md5, crypto:hash_init(md5)};
+hash_init(md4)       -> {md4, crypto:hash_init(md4)};
+hash_init(sha)       -> {sha, crypto:hash_init(sha)};
 %hash_init(ripemd160) -> {ripemd160, ripemd160_init()};
 hash_init(sha224)    -> {sha224, crypto:sha224_init()};
 hash_init(sha256)    -> {sha256, crypto:sha256_init()};
@@ -238,9 +238,9 @@ hash_update(State, Data0) ->
 
 -spec hash_final(_) -> binary().
 
-hash_final({md5,Context})       -> crypto:md5_final(Context);
-hash_final({md4,Context})       -> crypto:md4_final(Context);
-hash_final({sha,Context})       -> crypto:sha_final(Context);
+hash_final({md5,Context})       -> crypto:hash_final(Context);
+hash_final({md4,Context})       -> crypto:hash_final(Context);
+hash_final({sha,Context})       -> crypto:hash_final(Context);
 %hash_final({ripemd160,Context}) -> ripemd160_final(Context);
 hash_final({sha224,Context})    -> crypto:sha224_final(Context);
 hash_final({sha256,Context})    -> crypto:sha256_final(Context);
@@ -379,7 +379,7 @@ stream_decrypt(State, Data0) ->
 			  crypto_integer().
 
 rand_bytes(N) ->
-	crypto:rand_bytes(N).
+	crypto:strong_rand_bytes(N).
 
 %%
 %% Strong random bytes read from /dev/random
@@ -411,7 +411,7 @@ rand_bytes(N) ->
 %	end.
 
 strong_rand_bytes(N) ->
-	crypto:rand_bytes(N). %%XXX
+	crypto:strong_rand_bytes(N). %%XXX
 
 rand_uniform(_Lo, _Hi) ->
 	erlang:error(not_implemented).
@@ -503,7 +503,7 @@ generate_key(Type, Params) ->
 
 generate_key(dh, [P,G], _) ->
 	%% P and G are numbers; see dh_generate_key()
-	PrivKey = <<PrivInt:128/unit:8>> = crypto:rand_bytes(128),
+	PrivKey = <<PrivInt:128/unit:8>> = crypto:strong_rand_bytes(128),
 	SecInt = mod_exp(G, PrivInt, P),
 	Secret = <<SecInt:128/unit:8>>,
 	{Secret,PrivKey}.
@@ -530,9 +530,9 @@ hash(State0, Data, _Size, MaxByts, continue) ->
     State = do_hash_update(State0, Increment),
     hash(State, Rest, erlang:byte_size(Rest), max_bytes(), continue).
 
-do_hash(md5, Data)          -> crypto:md5(Data);
-do_hash(md4, Data)          -> crypto:md4(Data);
-do_hash(sha, Data)          -> crypto:sha(Data);
+do_hash(md5, Data)          -> crypto:hash(md5,Data);
+do_hash(md4, Data)          -> crypto:hash(md4,Data);
+do_hash(sha, Data)          -> crypto:hash(sha,Data);
 %do_hash(ripemd160, Data)    -> ripemd160(Data);
 do_hash(sha224, Data)       -> crypto:sha224(Data);
 do_hash(sha256, Data)       -> crypto:sha256(Data);
@@ -546,9 +546,9 @@ hash_update(State0, Data, _, MaxBytes) ->
     State = do_hash_update(State0, Increment),
     hash_update(State, Rest, erlang:byte_size(Rest), MaxBytes).
 
-do_hash_update({md5,Context}, Data)       -> {md5, crypto:md5_update(Context,Data)};
-do_hash_update({md4,Context}, Data)       -> {md4, crypto:md4_update(Context,Data)};
-do_hash_update({sha,Context}, Data)       -> {sha, crypto:sha_update(Context,Data)};
+do_hash_update({md5,Context}, Data)       -> {md5, crypto:hash_update(Context,Data)};
+do_hash_update({md4,Context}, Data)       -> {md4, crypto:hash_update(Context,Data)};
+do_hash_update({sha,Context}, Data)       -> {sha, crypto:hash_update(Context,Data)};
 %do_hash_update({ripemd160,Context}, Data) -> {ripemd160, ripemd160_update(Context,Data)};
 do_hash_update({sha224,Context}, Data)    -> {sha224, crypto:sha224_update(Context,Data)};
 do_hash_update({sha256,Context}, Data)    -> {sha256, crypto:sha256_update(Context,Data)};
@@ -957,7 +957,7 @@ rc2_40_cbc_decrypt(Key, IVec, Data)  when erlang:byte_size(Key) == 5 ->
 dh_generate_key([P,G]) ->
 	<<Sz:32,_/binary>> = P,
 	KeySize = Sz -1,
-	PrivKey = <<KeySize:32,(crypto:rand_bytes(KeySize))/binary>>,
+	PrivKey = <<KeySize:32,(crypto:strong_rand_bytes(KeySize))/binary>>,
 	SecInt = mod_exp(erlint(G), erlint(PrivKey), erlint(P)),
 	Secret = <<KeySize:32,SecInt:KeySize/unit:8>>,
 	{Secret,PrivKey}.
@@ -1085,7 +1085,7 @@ map_mpint_to_bin(List) ->
 -spec rsa_sign(rsa_digest_type(), data_or_digest(), [binary()]) -> binary().
 
 dss_sign(DataOrDigest,Key) ->
-    crypto:dss_sign(sha,DataOrDigest,Key).
+    crypto:sign(dss,sha,DataOrDigest,Key).
 dss_sign(Type, Data, Key) when is_binary(Data), Type=/=none ->
     sign(dss, Type, mpint_to_bin(Data), map_mpint_to_bin(Key));
 dss_sign(Type, Digest, Key) ->
@@ -1094,7 +1094,7 @@ dss_sign(Type, Digest, Key) ->
 
 %% Key = [E,N,D]  E=PublicExponent N=PublicModulus  D=PrivateExponent
 rsa_sign(DataOrDigest,Key) ->
-    crypto:rsa_sign(sha, DataOrDigest, Key).
+    crypto:sign(rsa,sha, DataOrDigest, Key).
 
 rsa_sign(Type, Data, Key) when is_binary(Data) ->
     sign(rsa, Type, mpint_to_bin(Data), map_mpint_to_bin(Key));
@@ -1112,7 +1112,7 @@ rsa_sign(Type, Digest, Key) ->
 
 %% Key = [P,Q,G,Y]   P,Q,G=DSSParams  Y=PublicKey
 dss_verify(Data,Signature,Key) ->
-    crypto:dss_verify(sha, Data, Signature, Key).
+    crypto:verify(dss,sha, Data, Signature, Key).
 
 dss_verify(Type,Data,Signature,Key) when is_binary(Data), Type=/=none ->
     verify(dss,Type,mpint_to_bin(Data),mpint_to_bin(Signature),map_mpint_to_bin(Key));
@@ -1121,7 +1121,7 @@ dss_verify(Type,Digest,Signature,Key) ->
 
 % Key = [E,N]  E=PublicExponent N=PublicModulus
 rsa_verify(Data,Signature,Key) ->
-    crypto:rsa_verify(sha, Data,Signature,Key).
+    crypto:verify(rsa,sha, Data,Signature,Key).
 rsa_verify(Type, Data, Signature, Key) when is_binary(Data) ->
     verify(rsa, Type, mpint_to_bin(Data), mpint_to_bin(Signature), map_mpint_to_bin(Key));
 rsa_verify(Type, Digest, Signature, Key) ->

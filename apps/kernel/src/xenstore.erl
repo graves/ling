@@ -251,6 +251,6 @@ rid({[Rid|Rids],NR}) -> {Rid,{Rids,NR}}.
 rrid(Rid, {Rids,NR}) -> {[Rid|Rids],NR}.
 
 token() ->
-	<<A,B,C,D,E,F,G,H>> = crypto:rand_bytes(8),
+	<<A,B,C,D,E,F,G,H>> = crypto:strong_rand_bytes(8),
 	lists:flatten(io_lib:format("~.16b~.16b~.16b~.16b~.16b~.16b~.16b~.16b", [A,B,C,D,E,F,G,H])).
 

@@ -18,7 +18,7 @@
 %%
 -module(gen_tcp_misc_SUITE).
 
--include_lib("test_server/include/test_server.hrl").
+-include_lib("test_server.hrl").
 
 %-compile(export_all).
 
@@ -1655,7 +1655,7 @@ so_priority(Config) when is_list(Config) ->
 %% Accept test utilities (suites are below)
 
 millis() ->
-    {A,B,C}=erlang:now(),
+    {A,B,C}=erlang:timestamp(),
     (A*1000000*1000)+(B*1000)+(C div 1000).
 	
 collect_accepts(Tmo) ->
@@ -2139,7 +2139,7 @@ send_timeout(Config) when is_list(Config) ->
     ParaFun(true),
     ok.
 mad_sender(S) ->
-    {_, _, USec} = now(),
+    {_, _, USec} = erlang:timestamp(),
     case gen_tcp:send(S, integer_to_list(USec)) of
         ok ->
             mad_sender(S);
@@ -2361,7 +2361,7 @@ setup_active_timeout_sink(Timeout, AutoClose) ->
 
      
 millistamp() ->
-    {Mega, Secs, Micros} = erlang:now(),
+    {Mega, Secs, Micros} = erlang:timestamp(),
     (Micros div 1000) + Secs * 1000 + Mega * 1000000000.
 
 has_superfluous_schedulers() ->

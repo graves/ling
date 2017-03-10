@@ -184,10 +184,10 @@ munge(UnixUid, UnixGid, Payload, TTL)
 		when is_integer(UnixUid), is_integer(UnixGid),
 			 is_binary(Payload), is_integer(TTL) ->
 
-	IVec = crypto:rand_bytes(16),
+	IVec = crypto:strong_rand_bytes(16),
 	Outer = <<?MUNGE_VER,4,3,0,0,IVec/binary>>,
 	
-	Salt = crypto:rand_bytes(8),
+	Salt = crypto:strong_rand_bytes(8),
 	Origin = get_origin(),
 	TS = '9p':timestamp(),
 	NormTTL = normalize_ttl(TTL),
@@ -305,7 +305,7 @@ unmunge(_) ->
 -spec generate_session_key() -> binary().
 
 generate_session_key() ->
-	crypto:rand_bytes(8).
+	crypto:strong_rand_bytes(8).
 
 %%-------- helpers ------------------------------------------------------------
 

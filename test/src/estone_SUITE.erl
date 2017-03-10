@@ -338,7 +338,7 @@ micros() ->
     ].
 
 macro(Ms,DataDir) ->
-    erlang:now(),  %% compensate for old 4.3 firsttime clock bug :-(
+    erlang:timestamp(),  %% compensate for old 4.3 firsttime clock bug :-(
     statistics(reductions),
     statistics(runtime),
     lists(500),  %% fixup cache on first round
@@ -368,10 +368,10 @@ run_micro(Top, M, DataDir) ->
 apply_micro(M) ->
     {GC0, Words0, _} = statistics(garbage_collection),
     statistics(reductions),
-    Before = erlang:now(),
+    Before = erlang:timestamp(),
 
     Compensate = apply_micro(M#micro.function, M#micro.loops),
-    After = erlang:now(),
+    After = erlang:timestamp(),
     {GC1, Words1, _} = statistics(garbage_collection),
     {_, Reds} = statistics(reductions),
     Elapsed = subtr(Before, After),
@@ -632,10 +632,10 @@ tup_trav(T, P, End) ->
 %% Port I/O
 port_io(I) ->
     ?line EstoneCat = get(estone_cat),
-    ?line Before = erlang:now(),
+    ?line Before = erlang:timestamp(),
     ?line Pps = make_port_pids(5, I, EstoneCat),  %% 5 ports
     ?line send_procs(Pps, go),
-    ?line After = erlang:now(),
+    ?line After = erlang:timestamp(),
     ?line wait_for_pids(Pps),
     ?line subtr(Before, After).
 
@@ -853,10 +853,10 @@ handle_call(_From, State, [abc]) ->
 
 %% Binary handling, creating, manipulating and sending binaries
 binary_h(I) ->
-    Before = erlang:now(),
+    Before = erlang:timestamp(),
     P = spawn(?MODULE, echo, [self()]),
     B = list_to_binary(lists:duplicate(2000, 5)),
-    After = erlang:now(),
+    After = erlang:timestamp(),
     Compensate = subtr(Before, After),
     binary_h_2(I, P, B),
     Compensate.

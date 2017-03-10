@@ -21,7 +21,7 @@
 %%%-----------------------------------------------------------------
 
 -module(lists_SUITE).
--include_lib("test_server/include/test_server.hrl").
+-include_lib("test_server.hrl").
 
 
 % Default timetrap timeout (set in init_per_testcase).
@@ -1625,7 +1625,7 @@ check_stab(L, U, S, US, SS) ->
 
 biglist(N) ->
     {A, B, C} = get_seed(),
-    random:seed(A, B, C),
+    rand:seed(A, B, C),
     biglist(N, []).
 
 biglist(0, L) ->
@@ -1642,7 +1642,7 @@ biglist(N, L) ->
 
 ubiglist(N) ->
     {A, B, C} = get_seed(),
-    random:seed(A, B, C),
+    rand:seed(A, B, C),
     ubiglist(N, []).
 
 ubiglist(0, L) ->
@@ -1667,7 +1667,7 @@ urandom_tuple(N, I) ->
 
 bigfunlist(N) ->
     {A, B, C} = get_seed(),
-    random:seed(A, B, C),
+    rand:seed(A, B, C),
     bigfunlist_1(N).
 
 bigfunlist_1(N) when N < 30000 -> % Now (R8) max 32000 different pids.
@@ -1702,9 +1702,9 @@ fun_pid(Fun) ->
     erlang:fun_info(Fun, pid).
 
 get_seed() ->
-    case random:seed() of
+    case rand:seed() of
 	undefined ->
-	    now();
+	    erlang:timestamp();
 	Tuple ->
 	    Tuple
     end.
@@ -1715,7 +1715,7 @@ random_tuple(N, Seq) ->
     {R1, R2, Seq}.
 
 randint(N) ->
-    trunc(random:uniform() * N).
+    trunc(rand:uniform() * N).
 
 %% The first "duplicate" is kept.
 no_dups([]) ->
@@ -1778,7 +1778,7 @@ sort_loop_1(Pid) ->
 
 sloop(N) ->
     {A, B, C} = get_seed(),
-    random:seed(A, B, C),
+    rand:seed(A, B, C),
     sloop(N, #state{}).
 
 sloop(N, S) ->
