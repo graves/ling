@@ -129,6 +129,7 @@ erlang:fun_info(Fun,What)		cbif_fun_info2
 erlang:halt$(Status,Flush)		cbif_halt2
 
 erlang:now()				cbif_now0
+erlang:timestamp()          cbif_timestamp0
 erlang:date()				cbif_date0
 erlang:time()				cbif_time0
 erlang:localtime()			cbif_localtime0
