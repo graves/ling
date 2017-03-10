@@ -694,6 +694,27 @@ term_t cbif_now0(proc_t *proc, term_t *regs)	// UTC
 			tag_int(msecs), tag_int(secs), tag_int(usecs));
 }
 
+term_t cbif_timestamp0(proc_t *proc, term_t *regs)	// UTC
+{
+    uint64_t wclock = wall_clock();
+    uint64_t wclock_us = wclock / 1000;
+    
+    static uint64_t saved_wclock_us = 0;
+    if (saved_wclock_us >= wclock_us)
+        wclock_us = saved_wclock_us+1;
+    saved_wclock_us = wclock_us;
+    
+    int secs = wclock_us / 1000000;
+    int usecs = wclock_us % 1000000;
+    
+    int msecs = secs / 1000000;
+    secs = secs % 1000000;
+    
+    return heap_tuple3(&proc->hp,
+                       tag_int(msecs), tag_int(secs), tag_int(usecs));
+}
+
+
 //date() -> {Year, Month, Day}
 term_t cbif_date0(proc_t *proc, term_t *regs)
 {
